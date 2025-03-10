@@ -6,6 +6,16 @@ MCP Server for the Mattermost API, enabling Claude and other MCP clients to inte
 
 This MCP server provides tools for interacting with Mattermost, including:
 
+### Topic Monitoring with LLM
+
+The server includes an intelligent topic monitoring system that uses Claude AI to analyze messages and identify relevant content. The monitoring system:
+
+- Periodically checks channels for new messages
+- Uses Claude to semantically analyze message content
+- Identifies messages related to configured topics
+- Sends notifications with relevant messages
+- Supports batch processing of messages for efficiency
+
 ### Channel Tools
 - `mattermost_list_channels`: List public channels in the workspace
 - `mattermost_get_channel_history`: Get recent messages from a channel
@@ -41,11 +51,43 @@ npm install
    {
      "mattermostUrl": "https://your-mattermost-instance.com/api/v4",
      "token": "your-personal-access-token",
-     "teamId": "your-team-id"
+     "teamId": "your-team-id",
+     "monitoring": {
+       "enabled": true,
+       "schedule": "*/5 * * * *",
+       "channels": ["channel-name-1", "channel-name-2"],
+       "topics": ["topic1", "topic2"],
+       "messageLimit": 50,
+       "stateFilePath": "./monitor-state.json",
+       "processExistingOnFirstRun": false,
+       "firstRunLimit": 10,
+       "llm": {
+         "provider": "anthropic",
+         "apiKey": "your-anthropic-api-key",
+         "model": "claude-3-sonnet-20240229",
+         "maxTokens": 1000
+       }
+     }
    }
    ```
 
    This approach keeps your real credentials out of the repository while maintaining the template for others.
+
+   ### Monitoring Configuration Options
+
+   - `enabled`: Enable or disable the monitoring system
+   - `schedule`: Cron expression for when to run the monitoring (e.g., "*/5 * * * *" for every 5 minutes)
+   - `channels`: Array of channel names to monitor
+   - `topics`: Array of topics to monitor for
+   - `messageLimit`: Maximum number of messages to analyze per channel
+   - `stateFilePath`: Path to store the monitoring state (this file is gitignored and should not be version controlled)
+   - `processExistingOnFirstRun`: Whether to process existing messages on first run
+   - `firstRunLimit`: Number of messages to process on first run
+   - `llm`: Configuration for the LLM (Claude) integration
+     - `provider`: LLM provider (currently only "anthropic" is supported)
+     - `apiKey`: Your Anthropic API key
+     - `model`: Claude model to use
+     - `maxTokens`: Maximum tokens for the LLM response
 
 4. Build the server:
 ```bash
@@ -56,6 +98,40 @@ npm run build
 ```bash
 npm start
 ```
+
+## Running the Monitoring System
+
+The monitoring system can be run in several ways:
+
+### Continuous Monitoring
+
+To run the monitoring system continuously according to the schedule in your config:
+
+```bash
+./run-monitoring.sh
+```
+
+This will start the monitoring process and keep it running in the background, checking for new messages according to the configured schedule.
+
+### One-time Monitoring
+
+To run the monitoring process once and then exit:
+
+```bash
+./run-monitoring-now.sh
+```
+
+This is useful for testing or for running the monitoring process manually.
+
+### HTTP Server Mode
+
+To run the monitoring system with an HTTP server that exposes the MCP tools:
+
+```bash
+./run-monitoring-http.sh
+```
+
+This mode allows you to interact with the monitoring system via HTTP requests, in addition to the scheduled monitoring.
 
 ## Tool Details
 
@@ -108,6 +184,22 @@ npm start
   - `channel_id` (string): The channel containing the thread
   - `post_id` (string): ID of the parent message
 - Returns: List of replies with their content and metadata
+
+### Monitoring Tools
+
+#### `mattermost_get_monitoring_status`
+- Get the current status of the monitoring system
+- No inputs required
+- Returns: Object with monitoring status information
+  - `enabled`: Whether monitoring is enabled
+  - `running`: Whether monitoring is currently running
+
+#### `mattermost_run_monitoring`
+- Run the monitoring process immediately
+- No inputs required
+- Returns: Object with monitoring result information
+  - `success`: Whether the monitoring process completed successfully
+  - `message`: Status message
 
 ### User Tools
 

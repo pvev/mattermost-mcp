@@ -21,6 +21,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
     "@modelcontextprotocol/sdk": "^0.7.0",
     "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2"

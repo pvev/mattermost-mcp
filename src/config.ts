@@ -6,6 +6,13 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export interface LlmConfig {
+  provider: 'anthropic' | 'openai';
+  apiKey: string;
+  model: string;
+  maxTokens: number;
+}
+
 export interface MonitoringConfig {
   enabled: boolean;
   schedule: string; // cron format
@@ -15,6 +22,7 @@ export interface MonitoringConfig {
   stateFilePath: string; // path to store state
   processExistingOnFirstRun: boolean; // whether to process existing messages on first run
   firstRunLimit: number; // number of messages to process on first run
+  llm?: LlmConfig; // LLM configuration
 }
 
 export interface Config {

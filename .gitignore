@@ -17,6 +17,10 @@ dist/
 .env.production.local
 config.local.json
 
+# State files
+monitor-state.json
+*.state.json
+
 # IDE
 .idea/
 .vscode/

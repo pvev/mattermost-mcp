@@ -21,7 +21,8 @@ export class TopicMonitor {
       client,
       this.stateManager,
       config.topics,
-      config.messageLimit
+      config.messageLimit,
+      config.llm
     );
     this.scheduler = new MonitoringScheduler(
       config.schedule,
@@ -232,7 +233,7 @@ export class TopicMonitor {
     }
     
     try {
-      const { channelName, posts, relevantTopics } = result;
+      const { channelId, channelName, posts, relevantTopics } = result;
       
       // Get user info to include in the notification
       let username = 'user';
@@ -243,10 +244,13 @@ export class TopicMonitor {
         console.error('Error getting user profile:', error);
       }
       
+      // Get the Mattermost URL from the client
+      const mattermostUrl = (this.client as any).baseUrl || '';
+      const baseUrl = mattermostUrl.replace(/\/api\/v4\/?$/, '');
+      
       // Create a notification message
       let message = `@${username} **Topic Monitor Alert**\n\n`;
-      message += `Found ${posts.length} relevant posts in channel: **${channelName}**\n`;
-      message += `Topics: ${relevantTopics.join(', ')}\n\n`;
+      message += `Found ${posts.length} relevant posts in channel: **${channelName}**\n\n`;
       
       // Add post details
       message += `**Recent Messages:**\n`;
@@ -260,8 +264,17 @@ export class TopicMonitor {
           // Ignore errors and use the user ID
         }
         
+        // Get the post-specific topics
+        const postTopics = (post as any).relevantTopics || relevantTopics;
+        const topicsStr = postTopics.join(', ');
+        
+        // Create a link to the message
+        const teamId = (this.client as any).teamId || '';
+        const messageLink = `${baseUrl}/teams/${teamId}/channels/${channelId}/${post.id}`;
+        
         const timestamp = new Date(post.create_at).toLocaleString();
-        message += `- ${timestamp} (${postAuthor}): "${post.message}"\n`;
+        message += `- [${timestamp} (${postAuthor})](${messageLink}): "${post.message}"\n`;
+        message += `  Topic: **${topicsStr}**\n\n`;
       }
       
       if (posts.length > 5) {
