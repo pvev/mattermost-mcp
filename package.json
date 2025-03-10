@@ -22,10 +22,12 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.7.0",
+    "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "@types/node-cron": "^3.0.11",
     "typescript": "^5.3.3"
   },
   "files": [

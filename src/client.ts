@@ -169,4 +169,34 @@ export class MattermostClient {
     
     return response.json() as Promise<UserProfile>;
   }
+  
+  // Get the current user's profile (the bot/integration itself)
+  async getMe(): Promise<UserProfile> {
+    const url = `${this.baseUrl}/users/me`;
+    const response = await fetch(url, { headers: this.headers });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to get own user profile: ${response.status} ${response.statusText}`);
+    }
+    
+    return response.json() as Promise<UserProfile>;
+  }
+  
+  // Create a direct message channel between two users
+  async createDirectChannel(userId1: string, userId2: string): Promise<Channel> {
+    const url = `${this.baseUrl}/channels/direct`;
+    const body = [userId1, userId2];
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(body)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to create direct channel: ${response.status} ${response.statusText}`);
+    }
+    
+    return response.json() as Promise<Channel>;
+  }
 }

@@ -6,10 +6,22 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export interface MonitoringConfig {
+  enabled: boolean;
+  schedule: string; // cron format
+  channels: string[]; // channel names to monitor
+  topics: string[]; // topics to look for
+  messageLimit: number; // number of messages to analyze per channel
+  stateFilePath: string; // path to store state
+  processExistingOnFirstRun: boolean; // whether to process existing messages on first run
+  firstRunLimit: number; // number of messages to process on first run
+}
+
 export interface Config {
   mattermostUrl: string;
   token: string;
   teamId: string;
+  monitoring?: MonitoringConfig;
 }
 
 export function loadConfig(): Config {
