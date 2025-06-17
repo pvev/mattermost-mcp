@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/pvev-mattermost-mcp-badge.png)](https://mseep.ai/app/pvev-mattermost-mcp)
+
 # Mattermost MCP Server
 
 MCP Server for the Mattermost API, enabling Claude and other MCP clients to interact with Mattermost workspaces.
