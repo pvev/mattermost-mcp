@@ -5,21 +5,29 @@ import {
   handleListChannels,
   handleGetChannelHistory
 } from "./channels.js";
-import { 
-  postMessageTool, 
-  replyToThreadTool, 
-  addReactionTool, 
+import {
+  postMessageTool,
+  replyToThreadTool,
+  addReactionTool,
   getThreadRepliesTool,
+  createDirectChannelTool,
+  sendDirectMessageTool,
+  getDirectChannelPostsTool,
   handlePostMessage,
   handleReplyToThread,
   handleAddReaction,
-  handleGetThreadReplies
+  handleGetThreadReplies,
+  handleCreateDirectChannel,
+  handleSendDirectMessage,
+  handleGetDirectChannelPosts
 } from "./messages.js";
-import { 
-  getUsersTool, 
+import {
+  getUsersTool,
   getUserProfileTool,
+  searchUsersTool,
   handleGetUsers,
-  handleGetUserProfile
+  handleGetUserProfile,
+  handleSearchUsers
 } from "./users.js";
 import {
   runMonitoringTool,
@@ -38,6 +46,10 @@ export const tools: Tool[] = [
   getThreadRepliesTool,
   getUsersTool,
   getUserProfileTool,
+  searchUsersTool,
+  createDirectChannelTool,
+  sendDirectMessageTool,
+  getDirectChannelPostsTool,
   runMonitoringTool
 ];
 
@@ -54,6 +66,10 @@ export const toolHandlers: Record<string, Function> = {
   mattermost_get_thread_replies: handleGetThreadReplies,
   mattermost_get_users: handleGetUsers,
   mattermost_get_user_profile: handleGetUserProfile,
+  mattermost_search_users: handleSearchUsers,
+  mattermost_create_direct_channel: handleCreateDirectChannel,
+  mattermost_send_direct_message: handleSendDirectMessage,
+  mattermost_get_direct_channel_posts: handleGetDirectChannelPosts,
   mattermost_run_monitoring: handleRunMonitoring
 };
 

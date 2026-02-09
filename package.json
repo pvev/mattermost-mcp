@@ -11,7 +11,8 @@
     "build": "tsc",
     "postbuild": "chmod +x build/index.js",
     "start": "node build/index.js",
-    "dev": "tsc && node build/index.js"
+    "dev": "tsc && node build/index.js",
+    "test": "vitest run"
   },
   "keywords": [
     "mattermost",
@@ -28,7 +29,8 @@
   "devDependencies": {
     "@types/node": "^20.11.0",
     "@types/node-cron": "^3.0.11",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^4.0.18"
   },
   "files": [
     "build"

@@ -15,6 +15,7 @@ export class MattermostClient {
   private baseUrl: string;
   private headers: Record<string, string>;
   private teamId: string;
+  private myUserId: string | null = null;
 
   constructor() {
     const config = loadConfig();
@@ -24,6 +25,18 @@ export class MattermostClient {
       'Authorization': `Bearer ${config.token}`,
       'Content-Type': 'application/json'
     };
+  }
+
+  async getMyUserId(): Promise<string> {
+    if (this.myUserId) return this.myUserId;
+    const url = `${this.baseUrl}/users/me`;
+    const response = await fetch(url, { headers: this.headers });
+    if (!response.ok) {
+      throw new Error(`Failed to get authenticated user: ${response.status} ${response.statusText}`);
+    }
+    const user = await response.json() as User;
+    this.myUserId = user.id;
+    return user.id;
   }
 
   // Channel-related methods
@@ -184,11 +197,25 @@ export class MattermostClient {
     return response.json() as Promise<UserProfile>;
   }
   
+  async searchUsers(term: string): Promise<User[]> {
+    const url = `${this.baseUrl}/users/search`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({ term }),
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to search users: ${response.status} ${response.statusText}`);
+    }
+    return response.json() as Promise<User[]>;
+  }
+
   // Direct message channel methods
   async createDirectMessageChannel(userId: string): Promise<Channel> {
+    const myId = await this.getMyUserId();
     const url = `${this.baseUrl}/channels/direct`;
-    const body = [userId];
-    
+    const body = [myId, userId];
+
     const response = await fetch(url, {
       method: 'POST',
       headers: this.headers,
