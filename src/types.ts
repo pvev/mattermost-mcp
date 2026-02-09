@@ -43,6 +43,25 @@ export interface GetUserProfileArgs {
   user_id: string;
 }
 
+export interface CreateDirectChannelArgs {
+  user_id: string;
+}
+
+export interface SendDirectMessageArgs {
+  user_id: string;
+  message: string;
+  root_id?: string;
+}
+
+export interface GetDirectChannelPostsArgs {
+  user_id: string;
+  per_page?: number;
+}
+
+export interface SearchUsersArgs {
+  term: string;
+}
+
 // Mattermost API response types
 export interface Channel {
   id: string;

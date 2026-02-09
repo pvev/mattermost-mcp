@@ -1,10 +1,13 @@
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { MattermostClient } from "../client.js";
-import { 
-  PostMessageArgs, 
-  ReplyToThreadArgs, 
-  AddReactionArgs, 
-  GetThreadRepliesArgs 
+import {
+  PostMessageArgs,
+  ReplyToThreadArgs,
+  AddReactionArgs,
+  GetThreadRepliesArgs,
+  CreateDirectChannelArgs,
+  SendDirectMessageArgs,
+  GetDirectChannelPostsArgs
 } from "../types.js";
 
 // Tool definition for posting a message
@@ -199,6 +202,184 @@ export async function handleAddReaction(
     };
   } catch (error) {
     console.error("Error adding reaction:", error);
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        },
+      ],
+      isError: true,
+    };
+  }
+}
+
+// Tool definition for creating a direct message channel
+export const createDirectChannelTool: Tool = {
+  name: "mattermost_create_direct_channel",
+  description: "Create or get an existing direct message channel with a user",
+  inputSchema: {
+    type: "object",
+    properties: {
+      user_id: {
+        type: "string",
+        description: "The ID of the user to create a DM channel with",
+      },
+    },
+    required: ["user_id"],
+  },
+};
+
+// Tool definition for sending a direct message
+export const sendDirectMessageTool: Tool = {
+  name: "mattermost_send_direct_message",
+  description: "Send a direct message to a user (creates DM channel if needed)",
+  inputSchema: {
+    type: "object",
+    properties: {
+      user_id: {
+        type: "string",
+        description: "The ID of the user to send a DM to",
+      },
+      message: {
+        type: "string",
+        description: "The message text to send",
+      },
+      root_id: {
+        type: "string",
+        description: "The ID of the root post for threaded replies (optional)",
+      },
+    },
+    required: ["user_id", "message"],
+  },
+};
+
+// Tool definition for getting direct channel posts
+export const getDirectChannelPostsTool: Tool = {
+  name: "mattermost_get_direct_channel_posts",
+  description: "Get recent posts from a direct message conversation with a user",
+  inputSchema: {
+    type: "object",
+    properties: {
+      user_id: {
+        type: "string",
+        description: "The ID of the user whose DM conversation to read",
+      },
+      per_page: {
+        type: "number",
+        description: "Number of posts to return (default 30)",
+        default: 30,
+      },
+    },
+    required: ["user_id"],
+  },
+};
+
+// Tool handler for creating a direct message channel
+export async function handleCreateDirectChannel(
+  client: MattermostClient,
+  args: CreateDirectChannelArgs
+) {
+  const { user_id } = args;
+
+  try {
+    const channel = await client.createDirectMessageChannel(user_id);
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            id: channel.id,
+            type: channel.type,
+            name: channel.name,
+            display_name: channel.display_name,
+          }, null, 2),
+        },
+      ],
+    };
+  } catch (error) {
+    console.error("Error creating direct channel:", error);
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        },
+      ],
+      isError: true,
+    };
+  }
+}
+
+// Tool handler for sending a direct message
+export async function handleSendDirectMessage(
+  client: MattermostClient,
+  args: SendDirectMessageArgs
+) {
+  const { user_id, message, root_id } = args;
+
+  try {
+    const channel = await client.createDirectMessageChannel(user_id);
+    const post = await client.createPost(channel.id, message, root_id);
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            id: post.id,
+            channel_id: post.channel_id,
+            message: post.message,
+            root_id: post.root_id || null,
+            create_at: new Date(post.create_at).toISOString(),
+            dm_with_user: user_id,
+          }, null, 2),
+        },
+      ],
+    };
+  } catch (error) {
+    console.error("Error sending direct message:", error);
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        },
+      ],
+      isError: true,
+    };
+  }
+}
+
+// Tool handler for getting direct channel posts
+export async function handleGetDirectChannelPosts(
+  client: MattermostClient,
+  args: GetDirectChannelPostsArgs
+) {
+  const { user_id, per_page } = args;
+  const limit = per_page || 30;
+
+  try {
+    const channel = await client.createDirectMessageChannel(user_id);
+    const response = await client.getPostsForChannel(channel.id, limit);
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(response, null, 2),
+        },
+      ],
+    };
+  } catch (error) {
+    console.error("Error getting direct channel posts:", error);
     return {
       content: [
         {

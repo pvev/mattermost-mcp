@@ -1,6 +1,6 @@
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { MattermostClient } from "../client.js";
-import { GetUsersArgs, GetUserProfileArgs } from "../types.js";
+import { GetUsersArgs, GetUserProfileArgs, SearchUsersArgs } from "../types.js";
 
 // Tool definition for getting users
 export const getUsersTool: Tool = {
@@ -38,6 +38,64 @@ export const getUserProfileTool: Tool = {
     required: ["user_id"],
   },
 };
+
+// Tool definition for searching users
+export const searchUsersTool: Tool = {
+  name: "mattermost_search_users",
+  description: "Search for users by username, first name, last name, or email",
+  inputSchema: {
+    type: "object",
+    properties: {
+      term: {
+        type: "string",
+        description: "The search term to match against username, first name, last name, or email",
+      },
+    },
+    required: ["term"],
+  },
+};
+
+// Tool handler for searching users
+export async function handleSearchUsers(
+  client: MattermostClient,
+  args: SearchUsersArgs
+) {
+  const { term } = args;
+
+  try {
+    const users = await client.searchUsers(term);
+
+    const formattedUsers = users.map(user => ({
+      id: user.id,
+      username: user.username,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+    }));
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(formattedUsers, null, 2),
+        },
+      ],
+    };
+  } catch (error) {
+    console.error("Error searching users:", error);
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        },
+      ],
+      isError: true,
+    };
+  }
+}
 
 // Tool handler for getting users
 export async function handleGetUsers(

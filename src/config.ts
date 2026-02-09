@@ -60,9 +60,7 @@ function validateConfig(config: Config): void {
   if (!config.token) {
     throw new Error('Missing token in configuration');
   }
-  if (!config.teamId) {
-    throw new Error('Missing teamId in configuration');
-  }
+  // teamId is optional - DMs and user search work without team membership
   
   // Validate monitoring config if enabled
   if (config.monitoring?.enabled) {
